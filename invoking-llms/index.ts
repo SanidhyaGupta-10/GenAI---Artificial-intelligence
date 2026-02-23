@@ -13,11 +13,27 @@ const groq = new Groq({
 async function main() {
     const chatCompletion = await groq.chat.completions
         .create({
+            // Temperature is a parameter that controls the randomness of the output 
+            temperature: 0.9,
+            // Top P (nucleus sampling) is a parameter that controls the diversity of the output 
+            // top_p: 0.9,
+            // Stop is a parameter that controls the end of the output 
+            stop: ['11'],
+            // Max Completion Tokens is a parameter that controls the maximum number of tokens in the output 
+            max_completion_tokens: 100,
+            // Model Selection 
             model: "llama-3.3-70b-versatile",
+            // messages is an array of objects 
             messages: [
+                // System Prompting 
+                {
+                    role: "system",
+                    content: "You are Jarvis, a helpful assistant."
+                },
+                // User Prompting 
                 {
                     role: "user",
-                    content: "Explain the importance of fast language models"
+                    content: "Hello What's up?"
                 }
             ]
         });

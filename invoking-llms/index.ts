@@ -1,4 +1,5 @@
 // console.log("GenAI is fun!");
+
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 dotenv.config();
@@ -20,7 +21,7 @@ async function main() {
                 }
             ]
         });
-    console.log(chatCompletion.choices[0].message.content);
+    console.log(chatCompletion?.choices?.[0]?.message?.content);
 };
 
 main();

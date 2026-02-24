@@ -14,7 +14,7 @@ async function main() {
     const chatCompletion = await groq.chat.completions
         .create({
             // Temperature is a parameter that controls the randomness of the output 
-            temperature: 0.9,
+            temperature: 0,
             // Top P (nucleus sampling) is a parameter that controls the diversity of the output 
             // top_p: 0.9,
             // Stop is a parameter that controls the end of the output 
@@ -46,9 +46,34 @@ async function main() {
                     role: "user",
                     content: "Hello What's up?"
                 }
-            ]
+            ],
+            tools: [
+                {
+                    type: 'function',
+                    function: {
+                        name: 'Search the latest information and real time data',
+                        description: 'Search the latest information and real time data',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                query: {
+                                    type: 'string',
+                                    description: 'The query to search for'
+                                }
+                            },
+                            required: ['query']
+                        }
+                    }
+                }
+            ],
+            tool_choice: 'auto'
         });
     console.log(chatCompletion?.choices?.[0]?.message?.content);
 };
 
 main();
+
+async function webSeacrh({ query }: { query: string }) {
+    // Here we will do tavily api call
+    return "Iphone was Launched on 20 september 2024."
+}

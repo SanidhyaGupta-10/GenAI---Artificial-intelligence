@@ -1,0 +1,97 @@
+Token
+-- The smallest unit of text a model processes (word‑piece, sub‑word or character).
+-- Example: “un‑believable” → three tokens: “un”, “##believ”, “##able”.
+
+Context & Context‑Window
+-- Context = all tokens the model can “see” while generating a response.
+-- Context‑window = the maximum number of tokens the model can retain (e.g., 4 k, 8 k, 32 k).
+-- Anything beyond the window is truncated, which can cause loss of earlier information.
+
+Inference
+-- The act of feeding a tokenised prompt to a trained model and obtaining output tokens.
+-- Latency is influenced by model size, hardware, and the length of the context‑window.
+
+Zero‑Shot Prompting
+-- Provide only the task description, no examples.
+-- Relies on the model’s broad, pre‑trained knowledge.
+-- Useful for quick queries or when you trust the model’s general capabilities.
+
+Few‑Shot Prompting
+-- Include a small set (usually 1‑5) of input‑output examples inside the prompt.
+-- Guides the model toward a desired format, style, or domain‑specific behavior.
+-- Example structure:  
+Task: Translate English to French.
+Example 1:
+English: "Hello, how are you?"
+French: "Bonjour, comment ça va?"
+Example 2:
+English: "The cat is sleeping."
+French: "Le chat dort."
+Now translate:
+English: "The sky is blue."
+French: "Le ciel est bleu."
+
+Chain‑of‑Thought (CoT) Prompting
+-- Ask the model to reason step‑by‑step before giving the final answer.
+-- Particularly effective for arithmetic, logic puzzles, or any multi‑step reasoning.
+-- Typical trigger phrase: “Let’s think step by step.”
+
+How Chain‑of‑Thought Works
+
+User supplies a problem plus a cue to reason (“Think step‑by‑step:”).
+LLM generates a series of intermediate reasoning steps as tokens.
+Those steps are kept within the context‑window, allowing the model to build on them.
+After the reasoning chain, the model produces the final answer.
+Prompt Engineering Best Practices
+
+-- Be explicit about the output format – state JSON, bullet list, short answer, etc.
+-- Use clear delimiters – separate instructions, examples, and the actual query with
+
+System Prompt
+-- The initial instruction that sets the behaviour, role, and constraints of the LLM for the entire conversation.
+-- It is not visible to the user but guides the model’s tone (“You are a friendly math tutor”), policies (“Refuse unsafe requests”), and any default formatting rules.
+
+Prompt Message Structure
+-- The way a user‑assistant exchange is packaged before being sent to the model.
+-- Typical fields (JSON‑style) used by most APIs:
+    [
+        { "role": "system",   "content": "…" },
+        { "role": "user",     "content": "…" },
+        { "role": "assistant","content": "…" }   // optional, for few‑shot examples
+    ]
+-- Ordering matters: system → assistant (examples) → user (current query).
+-- Each message is tokenised independently, but the total token count of the list must stay inside the model’s context‑window.
+
+LLM Settings
+-- Parameters that control how the model generates text.
+
+Structured Output
+-- An explicit, machine‑parsable format (JSON, XML, CSV, markdown tables, etc.) that the model returns.
+-- Benefits: easy downstream processing, validation, and reduces hallucination of format.
+-- Common recipe:
+
+Add a system‑level instruction: “All answers must be valid JSON matching the schema below.”
+Provide the JSON schema (or an example) in the prompt.
+
+Introduction to Tool Calling
+-- Tool calling lets an LLM invoke external functions (APIs, databases, scripts) during a conversation.
+-- The model decides, based on the user’s request, whether it needs extra data or an action, then emits a structured tool‑call object.
+-- The execution engine runs the tool and feeds the result back to the model, which can incorporate it into its final reply.
+
+Tool Calling
+-- Used to interact with external resources, such as APIs databse and the web.
+
+Why LLMs need external resources?
+-- LLMs are trained on a massive dataset of text and code, but they are not connected to the internet and do not have access to real-time information. 
+-- They are also not able to perform actions in the real world, such as sending emails or making purchases. 
+-- Tool calling allows LLMs to overcome these limitations by providing them with access to external resources. 
+
+How Tool Calling Works?
+-- 
+1. User provides a prompt to the LLM. 
+2. LLM analyzes the prompt and determines if it needs to call a tool to get the answer. 
+3. If the LLM needs to call a tool, it will generate a tool call request with the tool name and arguments. 
+4. The tool call request is sent to the tool execution engine. 
+5. The tool execution engine executes the tool and returns the result to the LLM. 
+6. The LLM uses the result to generate the final answer. 
+

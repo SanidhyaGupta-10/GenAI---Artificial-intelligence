@@ -4,20 +4,17 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Create clients
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
-const tvly = tavily({
-  apiKey: process.env.TAVILY_API_KEY,
-});
-
+// Define tool for web search
 const tools = [
   {
     type: "function",
     function: {
       name: "webSearch",
-      description: "Search the web for up-to-date information",
+      description: "Search the web",
       parameters: {
         type: "object",
         properties: {
@@ -29,89 +26,58 @@ const tools = [
   },
 ];
 
-// Persistent conversation memory
+// Chat memory
 const messages = [
-  {
-    role: "system",
-    content: "You are a helpful assistant. Use webSearch when needed.",
-  },
+  { role: "system", content: "You are helpful. Use webSearch if needed." },
 ];
 
 async function runBot() {
   while (true) {
-    const userInput = prompt("\nAsk something (type 'exit' to quit): ");
+    const input = prompt("Ask something (exit to quit): ");
+    if (!input) continue;
+    if (input.toLowerCase() === "exit") break;
 
-    if (!userInput) continue;
-    if (userInput.toLowerCase() === "exit") break;
+    messages.push({ role: "user", content: input });
 
-    messages.push({
-      role: "user",
-      content: userInput,
-    });
-
-    let toolLoop = true;
-
-    while (toolLoop) {
-      const response = await groq.chat.completions.create({
+    while (true) {
+      const res = await groq.chat.completions.create({
         model: "openai/gpt-oss-120b",
-        temperature: 0,
         messages,
         tools,
         tool_choice: "auto",
       });
 
-      const message = response.choices[0].message;
+      const msg = res.choices[0].message;
 
-      // If no tool call → final answer
-      if (!message.tool_calls) {
-        console.log("\n=== ASSISTANT ===");
-        console.log(message.content);
-
-        messages.push({
-          role: "assistant",
-          content: message.content,
-        });
-
-        toolLoop = false;
+      // If no tool call → print answer
+      if (!msg.tool_calls) {
+        console.log("\nAssistant:", msg.content);
+        messages.push({ role: "assistant", content: msg.content });
         break;
       }
 
       // Add assistant tool request
-      messages.push({
-        role: "assistant",
-        content: message.content || null,
-        tool_calls: message.tool_calls,
-      });
+      messages.push(msg);
 
-      // Execute tools
-      for (const toolCall of message.tool_calls) {
-        const { name, arguments: args } = toolCall.function;
+      // Execute each tool call
+      for (const call of msg.tool_calls) {
+        const args = JSON.parse(call.function.arguments || "{}");
 
-        let result = "Tool execution failed";
+        let result = "Error";
 
-        try {
-          const parsedArgs = JSON.parse(args || "{}");
-
-          if (name === "webSearch") {
-            const search = await tvly.search(parsedArgs.query);
-            result = search.results
-              .map((r) => r.content)
-              .join("\n\n");
-          }
-        } catch (err) {
-          result = `Error: ${err.message}`;
+        if (call.function.name === "webSearch") {
+          const search = await tvly.search(args.query);
+          result = search.results.map(r => r.content).join("\n\n");
         }
 
         messages.push({
           role: "tool",
-          tool_call_id: toolCall.id,
+          tool_call_id: call.id,
           content: result,
         });
       }
     }
   }
-
-  console.log("Bot stopped.");
 }
 
-runBot().catch(console.error);
+runBot();

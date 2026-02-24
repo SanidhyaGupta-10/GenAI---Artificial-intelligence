@@ -1,79 +1,119 @@
-// console.log("GenAI is fun!");
-
+import { tavily } from "@tavily/core";
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
+import type { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 dotenv.config();
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
 const groq = new Groq({
     apiKey: GROQ_API_KEY,
 });
 
+const tvly = tavily({ 
+    apiKey: TAVILY_API_KEY 
+});
+
 async function main() {
-    const chatCompletion = await groq.chat.completions
-        .create({
-            // Temperature is a parameter that controls the randomness of the output 
-            temperature: 0,
-            // Top P (nucleus sampling) is a parameter that controls the diversity of the output 
-            // top_p: 0.9,
-            // Stop is a parameter that controls the end of the output 
-            stop: ['11'],
-            // Max Completion Tokens is a parameter that controls the maximum number of tokens in the output 
-            max_completion_tokens: 100,
-            // Frequency Penalty is a parameter that controls the repetition of the output 
-            frequency_penalty: 1,
-            // Presence Penalty is a parameter that controls the repetition of the output 
-            presence_penalty: 1,
-            // Difference between frequency_penalty and presence_penalty is that 
-            // frequency_penalty penalizes the repetition of the output 
-            // presence_penalty penalizes the presence of the output 
-            // Model Selection 
-            model: "llama-3.3-70b-versatile",
-            // Response Format 
-            response_format: {
-                type: "json_object",
-            },
-            // messages is an array of objects 
-            messages: [
-                // System Prompting 
-                {
-                    role: "system",
-                    content: "You are Jarvis, a helpful assistant."
-                },
-                // User Prompting 
-                {
-                    role: "user",
-                    content: "Hello What's up?"
-                }
-            ],
-            tools: [
-                {
-                    type: 'function',
-                    function: {
-                        name: 'Search the latest information and real time data',
-                        description: 'Search the latest information and real time data',
-                        parameters: {
-                            type: 'object',
-                            properties: {
-                                query: {
-                                    type: 'string',
-                                    description: 'The query to search for'
-                                }
-                            },
-                            required: ['query']
+    const messages: ChatCompletionMessageParam[] = [
+        {
+            role: "system",
+            content: "You are a helpful assistant. Use the search tool to find information."
+        },
+        {
+            role: "user",
+            content: "When was the iPhone 16 launched?"
+        }
+    ];
+
+    // Define tools once
+    const tools = [
+        {
+            type: "function" as const,
+            function: {
+                name: "webSearch",
+                description: "Search the web for up-to-date information",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        query: {
+                            type: "string",
+                            description: "The search query"
                         }
-                    }
+                    },
+                    required: ["query"]
                 }
-            ],
-            tool_choice: 'auto'
-        });
-    console.log(chatCompletion?.choices?.[0]?.message?.content);
-};
+            }
+        }
+    ];
+
+    // First API call
+    const chatCompletion = await groq.chat.completions.create({
+        temperature: 0,
+        model: "openai/gpt-oss-120b",
+        messages: messages,
+        tools: tools,
+        tool_choice: "auto"
+    });
+
+    const message = chatCompletion?.choices?.[0]?.message;
+    const toolCalls = message?.tool_calls;
+    
+    if (!toolCalls) {   
+        console.log(`Assistant: ${message?.content}`);
+        return;
+    }
+
+    // Add the assistant's message with tool calls to messages
+    messages.push({
+        role: "assistant",
+        content: message?.content || null, // Use null instead of empty string
+        tool_calls: toolCalls
+    });
+
+    // Process each tool call
+    for (const tool of toolCalls) {
+        console.log('tool: ', tool);
+        const functionName = tool?.function?.name;
+        const functionParams = JSON.parse(tool?.function?.arguments);
+        
+        if (functionName === 'webSearch') {
+            const toolResult = await searchWeb(functionParams);
+            console.log('toolResult: ', toolResult);
+
+            // Add the tool response
+            messages.push({
+                role: "tool",
+                tool_call_id: tool.id,
+                content: toolResult
+            });
+        }
+    }
+
+    // Second API call - WITHOUT tools parameter
+    // This forces the model to respond as a regular chat completion
+    const chatCompletion2 = await groq.chat.completions.create({
+        temperature: 0,
+        model: "openai/gpt-oss-120b",
+        messages: messages
+        // No tools or tool_choice parameter
+    });
+
+    console.log("\n=== FINAL RESPONSE ===");
+    console.log(chatCompletion2?.choices?.[0]?.message?.content);
+}
 
 main();
 
-async function webSeacrh({ query }: { query: string }) {
-    // Here we will do tavily api call
-    return "Iphone was Launched on 20 september 2024."
+async function searchWeb({ query }: { query: string }) {
+    console.log('Calling web search');
+    const response = await tvly.search(query);
+    console.log(response);
+
+    const finalResult = response.results
+        .map(result => result.content)
+        .join("\n\n");
+
+    return finalResult;
 }

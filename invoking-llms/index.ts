@@ -21,8 +21,19 @@ async function main() {
             stop: ['11'],
             // Max Completion Tokens is a parameter that controls the maximum number of tokens in the output 
             max_completion_tokens: 100,
+            // Frequency Penalty is a parameter that controls the repetition of the output 
+            frequency_penalty: 1,
+            // Presence Penalty is a parameter that controls the repetition of the output 
+            presence_penalty: 1,
+            // Difference between frequency_penalty and presence_penalty is that 
+            // frequency_penalty penalizes the repetition of the output 
+            // presence_penalty penalizes the presence of the output 
             // Model Selection 
             model: "llama-3.3-70b-versatile",
+            // Response Format 
+            response_format: {
+                type: "json_object",
+            },
             // messages is an array of objects 
             messages: [
                 // System Prompting 

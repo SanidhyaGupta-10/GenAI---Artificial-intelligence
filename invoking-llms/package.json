@@ -1,6 +1,6 @@
 {
   "name": "invoking-llms",
-  "module": "index.ts",
+  "module": "index.js",
   "type": "module",
   "private": true,
   "devDependencies": {

@@ -1,17 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const threadId = Date.now().toString(36) + Math.random().toString(36).slice(2);
 
   const messages = document.getElementById("messages");
   const input = document.getElementById("user-input");
   const button = document.getElementById("send-btn");
 
   // 🔹 Call backend
-  async function callServer(userText) {
+  async function callServer(userText, threadId) {
     const response = await fetch("http://localhost:4000/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ message: userText })
+      body: JSON.stringify({ message: userText, threadId })
     });
 
     if (!response.ok) {
@@ -62,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const botBubble = addMessage("Thinking...", "bot");
 
     try {
-      const reply = await callServer(text);
+      const reply = await callServer(text, threadId);
       botBubble.innerHTML = reply.replace(/\n/g, "<br>");
     } catch (error) {
       console.error(error);

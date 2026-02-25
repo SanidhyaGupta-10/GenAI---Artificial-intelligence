@@ -12,8 +12,13 @@ app.get('/', (req, res) => {
 });
 
 app.post('/chat', async (req, res) => {
-    const { message } = req.body
-    const msg = await generateResponse(message)
+    const { message, threadId } = req.body;
+    // todo: validate above fields
+    if (!message || !threadId) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const msg = await generateResponse(message, threadId)
     res.status(200).json({ reply: msg })
 });
 

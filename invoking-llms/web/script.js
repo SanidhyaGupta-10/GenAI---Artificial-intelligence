@@ -1,72 +1,84 @@
-// Wait until the full HTML page is loaded
 document.addEventListener("DOMContentLoaded", () => {
-  // Get important elements from HTML
-  const messages = document.getElementById("messages");   // Chat area
-  const input = document.getElementById("user-input");    // Text input box
-  const button = document.getElementById("send-btn");     // Send button
 
-  // Function to create and show a message
-  function addMessage(text, type) {
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("user-input");
+  const button = document.getElementById("send-btn");
 
-    // Create a new div (message bubble)
-    const div = document.createElement("div");
+  // 🔹 Call backend
+  async function callServer(userText) {
+    const response = await fetch("http://localhost:4000/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: userText })
+    });
 
-    // If message is from user → show on right (blue)
-    if (type === "user") {
-      div.className =
-        "bg-blue-600 text-white p-2 rounded-lg self-end max-w-[70%]";
-    } 
-    // Otherwise → show on left (bot message)
-    else {
-      div.className =
-        "bg-white/30 text-white p-2 rounded-lg self-start max-w-[70%]";
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
     }
 
-    // Add text inside the message bubble
-    div.textContent = text;
+    const data = await response.json();
+    console.log("Server response:", data);
 
-    // Add message to chat area
+    // 🔥 Flexible response handling
+    return (
+      data.message ||
+      data.reply ||
+      data.response ||
+      data.choices?.[0]?.message?.content ||
+      "No response from AI"
+    );
+  }
+
+  // 🔹 Create message bubble
+  function addMessage(text, type) {
+    const div = document.createElement("div");
+
+    div.className =
+      type === "user"
+        ? "bg-blue-600 text-white p-2 rounded-lg self-end max-w-[70%]"
+        : "bg-white/30 text-white p-2 rounded-lg self-start max-w-[70%]";
+
+    // Preserve line breaks
+    div.innerHTML = text.replace(/\n/g, "<br>");
+
     messages.appendChild(div);
-
-    // Auto scroll to latest message
     messages.scrollTop = messages.scrollHeight;
 
-    // Return the created message (useful for editing later)
     return div;
   }
-  // Function that runs when user sends message
-  function sendMessage() {
 
-    // Get text from input and remove extra spaces
+  // 🔹 Send message
+  async function sendMessage() {
     const text = input.value.trim();
-
-    // If input is empty → stop function
     if (!text) return;
 
-    // Show user's message in chat
     addMessage(text, "user");
-
-    // Clear input box after sending
     input.value = "";
 
-    // Add temporary bot message
-    const botMsg = addMessage("Thinking...", "bot");
+    button.disabled = true;
 
-    // After 1 second → change bot message
-    setTimeout(() => {
-      botMsg.textContent = "This is a demo response.";
-    }, 1000);
+    const botBubble = addMessage("Thinking...", "bot");
+
+    try {
+      const reply = await callServer(text);
+      botBubble.innerHTML = reply.replace(/\n/g, "<br>");
+    } catch (error) {
+      console.error(error);
+      botBubble.textContent = "⚠ Error connecting to server.";
+    } finally {
+      button.disabled = false;
+      input.focus();
+    }
   }
-  // When Send button is clicked → run sendMessage()
+
   button.addEventListener("click", sendMessage);
 
-  // When Enter key is pressed → send message
   input.addEventListener("keydown", (e) => {
-
-    // If key is Enter and Shift is NOT pressed
     if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();  // Stop new line
-      sendMessage();       // Send message
+      e.preventDefault();
+      sendMessage();
     }
   });
 

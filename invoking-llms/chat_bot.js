@@ -52,7 +52,7 @@ export async function generateResponse(userMessage, threadId) {
       retries++;
 
       const res = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "openai/gpt-oss-20b",
         messages,
         tools,
         tool_choice: "auto",

@@ -13,3 +13,8 @@
       3. Generate answer
       4. Return answer
 */
+import { indexTheDocument } from "./prepare";
+
+const filePath = "./cg-internal-docs.pdf";
+
+indexTheDocument(filePath);

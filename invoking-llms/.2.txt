@@ -1,0 +1,51 @@
+1. Introduction and Motivation
+• The AI Landscape: The video begins by highlighting the "flood" of AI tools and the massive funding being raised by companies, suggesting that web developers can build serious income by creating AI products.
+• The Need for GenAI Skills: Using NVIDIA research, the instructor explains that over half of large IT enterprises are actively using AI Agents, creating a significant demand for talent in GenAI development.
+• Case Studies: Real-world examples of Agentic AI are provided, including LinkedIn’s recruiter platform, Uber’s developer platform, Klarna’s customer support (which reduced resolution time by 80%), and the instructor's own mock interview platform, iPrap AI.
+
+2. Fundamentals of Generative AI
+• Definition: Generative AI is defined as AI that creates new content (text, images, video, music, code) rather than just classifying data.
+• Evolution of LLMs: The instructor traces the history from statistical models and Recurrent Neural Networks (RNNs) to the breakthrough 2017 Google research paper "Attention Is All You Need", which introduced the Transformer architecture and self-attention.
+• Model Training and Parameters: LLMs are trained on massive datasets (Wikipedia, books, etc.). Their "size" is determined by parameters (e.g., 8 billion, 32 billion, or trillions).
+• Key Terminology:
+    ◦ Tokens: The smallest unit of text processed by a model.
+    ◦ Context and Context Window: The surrounding information provided to a model and the maximum limit of tokens it can process at once.
+    ◦ Inference: The technical term for the process of a model generating a response.
+
+3. Tech Stack and Model Selection
+• Programming Languages: Focus on JavaScript and TypeScript.
+• Platforms and APIs: Use of OpenAI and Groq Cloud (which offers free credits and high-speed inference for open-source models like Llama and Gemma).
+• Model Categories: Distinction between GPT models (fast, direct generation) and Reasoning models (slower, step-by-step thinking/planning).
+
+
+4. Prompt Engineering
+• Core Concept: A technique to get consistent, high-quality results from non-deterministic models.
+• Prompt Elements: Instructions, Input Data, Context, and Output Indicators.
+• Techniques:
+    ◦ Zero-shot: Asking a question directly without examples.
+    ◦ Few-shot: Providing examples to guide the model's output.
+    ◦ Chain of Thought (CoT): Guiding the model to show its "thought process" for complex reasoning.
+• Best Practices: Starting simple, being specific, using leading words for code, and avoiding negative instructions (telling the AI what not to do).
+
+
+5. Technical Implementation in JavaScript
+• Invoking LLMs: Setting up a Node.js project and using the Groq SDK to call models.
+• System Prompts and Personas: Configuring the model's identity and behaviour (e.g., creating an assistant named "Jarvis") using System Messages.
+• Model Parameters: Adjusting Temperature (controlling randomness/creativity), Top P, Stop Sequences, and Max Tokens.
+• Structured Output: Methods to ensure the AI returns JSON data for use in programming logic, including JSON Mode and JSON Schema.
+
+
+6. Advanced Agentic Systems
+• Tool Calling (Function Calling): Allowing LLMs to access external resources like APIs, databases, or web search to overcome their knowledge cut-off and lack of real-time data.
+• The "React" Loop: Implementing a loop where the AI can call a tool, receive the result, and then generate a final answer.
+• Memory and History: Adding state to the otherwise stateless LLMs using Node-Cache and Thread IDs to maintain conversation history.
+• UI/UX: Building a web-based chat interface using Tailwind CSS and implementing Loading States (e.g., a "Thinking..." indicator).
+
+
+7. Retrieval Augmented Generation (RAG)
+• Concept: A technique where the system first retrieves relevant information from a private knowledge base and then provides it to the LLM to generate an answer.
+• Vector Infrastructure:
+    ◦ Vector Embeddings: Converting text into high-dimensional numbers that represent meaning.
+    ◦ Vector Databases: Using Pinecone to store and search these embeddings.
+    ◦ Similarity Search: Using algorithms like Cosine Similarity to find the most relevant "chunks" of data.
+• RAG Workflow: Loading documents (PDFs), chunking them into smaller pieces, generating embeddings, and performing similarity searches to provide context for user queries.

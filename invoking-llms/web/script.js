@@ -82,5 +82,4 @@ document.addEventListener("DOMContentLoaded", () => {
       sendMessage();
     }
   });
-
 });

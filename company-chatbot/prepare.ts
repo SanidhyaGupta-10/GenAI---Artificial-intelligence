@@ -75,11 +75,7 @@ export async function indexTheDocument(filePath: string) {
     metadata: docs[0]?.metadata ?? {},
   }));
   const test = await embeddings.embedDocuments(["test"]);
-<<<<<<< HEAD
 console.log("Test embedding dimension:", test.length);
-=======
-console.log("Test embedding dimension:", test[0]?.length);
->>>>>>> 8d0bd4ffb3eddc9b9fe10173496a744d50a71f51
   await vectorStore.addDocuments(documents);
 
   

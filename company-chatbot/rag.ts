@@ -15,6 +15,6 @@
 */
 import { indexTheDocument } from "./prepare.ts";
 
-const filePath = "./cg-internal-docs.pdf";
+const filePath = "./sample-company-document-5-pages.pdf";
 
 indexTheDocument(filePath);
